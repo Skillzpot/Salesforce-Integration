@@ -1,0 +1,122 @@
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.HttpStatus;
+import org.apache.http.util.EntityUtils;
+import org.apache.http.client.ClientProtocolException;
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONTokener;
+import org.json.JSONException;
+
+public class Main {
+
+static final String userName = "yourUsername";
+static final String password = "YourPassword+SecurityToken";
+static final String environmentUrl = "https://login.salesforce.com";
+static final String clientId = "Your ClientId";
+static final String clientSecret = "Your ClientSecret";
+private static String R_EndPoint = "/services/data" ;
+private static String Version = "/v32.0" ;
+private static String baseUri;
+private static Header authHeader;
+private static Header ppHeader = new BasicHeader("X-PrettyPrint", "1");
+private static String tokenUrl = null;
+public static void main(String[] args) {
+
+HttpClient httpclient = HttpClientBuilder.create().build();
+tokenUrl = environmentUrl + "/services/oauth2/token?grant_type=password";
+String loginURL = tokenUrl +
+"&client_id=" + clientId +
+"&client_secret=" + clientSecret +
+"&username=" + userName +
+"&password=" + password;
+
+HttpPost httpPost = new HttpPost(loginURL);
+HttpResponse response = null;
+
+try {
+response = httpclient.execute(httpPost);
+}catch (IOException ioexception) {
+}
+
+
+String getResult = null;
+try {
+getResult = EntityUtils.toString(response.getEntity());
+} catch (IOException e) {}
+
+JSONObject jsonObject = null;
+String accessToken = null;
+String instanceUrl = null;
+
+try {
+jsonObject = (JSONObject) new JSONTokener(getResult).nextValue();
+accessToken = jsonObject.getString("access_token");
+instanceUrl = jsonObject.getString("instance_url");
+} catch (JSONException jsonexp) { }
+
+baseUri = instanceUrl + R_EndPoint + Version ;
+authHeader = new BasicHeader("Authorization", "OAuth " + accessToken) ;
+
+System.out.println("It worked Well, Here is the Result");
+System.out.println("instance URL: "+instanceUrl);
+System.out.println("access token/session ID: "+accessToken);
+
+
+createAccount();
+
+
+httpPost.releaseConnection();
+}
+
+public static void createAccount() {
+String accountid;
+
+String uri = baseUri + "/sobjects/Account/";
+try{
+JSONObject account = new JSONObject();
+account.put("Name", "GetSkillsFast");
+account.put("AccountNumber", "dasd858sada");
+account.put("Site", "GetSkillsFast.com");
+
+HttpClient httpClient = HttpClientBuilder.create().build();
+
+HttpPost httpPost = new HttpPost(uri);
+httpPost.addHeader(authHeader);
+httpPost.addHeader(ppHeader);
+
+StringEntity body = new StringEntity(account.toString(1));
+body.setContentType("application/json");
+httpPost.setEntity(body);
+
+HttpResponse response = httpClient.execute(httpPost);
+String getResult = EntityUtils.toString(response.getEntity());
+JSONObject json = new JSONObject(getResult);
+accountid = json.getString("id");
+System.out.println("The Account Id is : " + accountid);
+
+} catch(JSONException e){e.printStackTrace();}
+
+catch (IOException io){io.printStackTrace();}
+
+catch(NullPointerException np){np.printStackTrace();}
+
+
+
+
+
+}
+
+}

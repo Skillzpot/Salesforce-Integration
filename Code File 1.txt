@@ -1,0 +1,83 @@
+import java.io.IOException;
+
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.util.EntityUtils;
+import org.apache.http.client.ClientProtocolException;
+
+
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.json.JSONException;
+
+public class REST_API_DEMO {
+
+private static final String clientId = "3MVG9Y6d_Btp4xp6SwDY.sMZAJaCfdRDlRGGlZ8j5MtccmfzR20yMgbLfpUxqWFp2pg9tX_znvNBw7Nl7J.0c";
+private static final String clientSecret = "7473395064900124502";
+private static final String redirectUri = "https://localhost:8443/RestTest/oauth/_callback";
+private static String tokenUrl = null;
+private static final String environmentUrl = "https://login.salesforce.com";
+private static final String userName = "prateek794@salesforce.com";
+private static final String password = "Abc@1234BpPwR4yQre9xWAQKToKdmhGG7";
+
+private static String accessToken = null;
+private static String instanceUrl = null;
+
+public static void main(String[] args) {
+// TODO Auto-generated method stub
+tokenUrl = environmentUrl + "/services/oauth2/token?grant_type=password";
+DefaultHttpClient httpclient = new DefaultHttpClient();
+String loginUrl = tokenUrl + "&client_id=" + clientId +
+"&client_secret=" + clientSecret + "&username=" + userName + "&password=" + password;
+
+HttpPost httppost = new HttpPost(loginUrl);
+HttpResponse response = null;
+
+try{
+
+response = httpclient.execute(httppost);
+
+} catch (IOException ioexception) {
+
+}
+
+String getResult = null;
+
+try { getResult = EntityUtils.toString(response.getEntity()); }
+
+catch ( IOException e) {
+
+
+}
+
+JSONObject jsonobject = null;
+
+try {
+jsonobject = (JSONObject) new JSONTokener(getResult).nextValue();
+accessToken = jsonobject.getString("access_token");
+instanceUrl = jsonobject.getString("instance_url");
+
+}
+catch (JSONException jsonexp) {}
+
+System.out.println("It worked Well, Here is the Result");
+System.out.println("Access Token : " + accessToken);
+System.out.println("Instance Url : " + instanceUrl);
+
+
+httppost.releaseConnection();
+
+
+
+
+
+
+
+
+
+
+
+}
+}

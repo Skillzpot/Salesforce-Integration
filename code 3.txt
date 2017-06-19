@@ -1,0 +1,32 @@
+public static void queryAccount() {
+
+HttpClient httpClient = HttpClientBuilder.create().build();
+String uri = baseUri + "/query?q=Select+Id+,+Name+,+AccountNumber+,+Site+From+Account+Limit+5";
+try{
+
+HttpGet httpget = new HttpGet(uri);
+httpget.addHeader(authHeader);
+httpget.addHeader(ppHeader);
+
+HttpResponse response = httpClient.execute(httpget);
+String getResult = EntityUtils.toString(response.getEntity());
+JSONObject json = new JSONObject(getResult);
+
+JSONArray jarr = json.getJSONArray("records");
+
+for(int i = 0 ; i <= jarr.length(); i++){
+
+accountid = json.getJSONArray("records").getJSONObject(i).getString("Id");
+accountname = json.getJSONArray("records").getJSONObject(i).getString("Name");
+accountnumber = json.getJSONArray("records").getJSONObject(i).getString("AccountNumber");
+System.out.println("The Returned Account Details are " + i + "." + accountid + "Account Name is " + accountname);
+
+}
+
+
+} catch(JSONException e){e.printStackTrace();}
+
+catch (IOException io){io.printStackTrace();}
+
+catch(NullPointerException np){np.printStackTrace();}
+} 
